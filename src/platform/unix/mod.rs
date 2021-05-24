@@ -105,11 +105,20 @@ pub unsafe fn init_os_handler() -> Result<(), Error> {
     };
 
     #[cfg(feature = "termination")]
-    match signal::sigaction(signal::Signal::SIGTERM, &new_action) {
-        Ok(_) => {}
-        Err(e) => {
-            signal::sigaction(signal::Signal::SIGINT, &_old).unwrap();
-            return Err(close_pipe(e));
+    {
+        match signal::sigaction(signal::Signal::SIGTERM, &new_action) {
+            Ok(_) => {}
+            Err(e) => {
+                signal::sigaction(signal::Signal::SIGINT, &_old).unwrap();
+                return Err(close_pipe(e));
+            }
+        }
+        match signal::sigaction(signal::Signal::SIGHUP, &new_action) {
+            Ok(_) => {}
+            Err(e) => {
+                signal::sigaction(signal::Signal::SIGINT, &_old).unwrap();
+                return Err(close_pipe(e));
+            }
         }
     }
 
